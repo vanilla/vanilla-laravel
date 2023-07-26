@@ -3,6 +3,7 @@
 A set of common laravel utilities and configurations used in Vanilla laravel services.
 
 ## Installation
+
 Require this package with composer using the following command:
 
 ```sh
@@ -37,6 +38,7 @@ Every made during a web request will have the following additional data applied.
 To apply this, update your desired log channel in `config/logging.php` file to use the new log formatter.
 
 **`config/logging.php`**
+
 ```php
 return [
     // ...Other configs here
@@ -56,19 +58,19 @@ return [
         // ...Other configs here
     ],
     // ...Other configs here
-]
+];
 ```
 
 The improved log formatter provides the following behaviours:
 
-- Outputs logs as serialized JSON prepended with `$json:` in the standard vanilla `v2` logging schema.
-- `Vanilla\Laravel\Exception\ContextException` instances will now have their context serialized.
-- Exception stack traces have improved serialization.
-  - Frames do not include the base path of the repo.
-  - Certain common frames are always excludes (like ones in the log formatter and exception handler).
-  - Vendor stack frames are collapsed.
-  - Only files and line numbers are included.
-- All logs get a minimal stacktrace.
+-   Outputs logs as serialized JSON prepended with `$json:` in the standard vanilla `v2` logging schema.
+-   `Vanilla\Laravel\Exception\ContextException` instances will now have their context serialized.
+-   Exception stack traces have improved serialization.
+    -   Frames do not include the base path of the repo.
+    -   Certain common frames are always excludes (like ones in the log formatter and exception handler).
+    -   Vendor stack frames are collapsed.
+    -   Only files and line numbers are included.
+-   All logs get a minimal stacktrace.
 
 ## Improved Exception Handling
 
@@ -76,9 +78,9 @@ To apply this have your exception handler in `Exceptions\Handler.php` extend fro
 
 It has the following improved behaviours
 
-- API responses will always be serialized as JSON.
-- Thrown `ContextExceptions` will serialize their context.
-- If the `app.debug` config is enabled then stack traces will be returned in the JSON output.
+-   API responses will always be serialized as JSON.
+-   Thrown `ContextExceptions` will serialize their context.
+-   If the `app.debug` config is enabled then stack traces will be returned in the JSON output.
 
 ## Context Exceptions
 
@@ -94,10 +96,8 @@ Want to add additional context to a caught `ContextException`? Use `ContextExcep
 composer require vanillaforums/laravel
 ```
 
-Now add `\Vanilla\Laravel\Providers\VanillaServiceProvider::class` into your 
+Now add `\Vanilla\Laravel\Providers\VanillaServiceProvider::class` into your
 
 ## Logging
 
 Vanilla has a standard logging schema that gets ingested into our logging stack. It's a JSON serialized log format beginning with `$json:`. The service provider
-
-
