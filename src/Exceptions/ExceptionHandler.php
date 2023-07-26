@@ -2,12 +2,18 @@
 
 namespace Vanilla\Laravel\Exceptions;
 
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Exceptions\Handler as BaseExceptionHandler;
 use Throwable;
 use Vanilla\Laravel\Logging\VanillaLogFormatter;
 
 class ExceptionHandler extends BaseExceptionHandler
 {
+    public function __construct(Container $container, private VanillaLogFormatter $logFormatter)
+    {
+        parent::__construct($container);
+    }
+
     /**
      * Implement better exception serialization.
      * @inheritDoc
@@ -22,7 +28,7 @@ class ExceptionHandler extends BaseExceptionHandler
             $result["context"] = $e->getContext();
         }
         if (config("app.debug")) {
-            $result["trace"] = VanillaLogFormatter::stackTraceArray($e->getTrace());
+            $result["trace"] = $this->logFormatter->stackTraceArray($e->getTrace());
         }
         return $result;
     }

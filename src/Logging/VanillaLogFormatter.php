@@ -61,12 +61,13 @@ class VanillaLogFormatter extends JsonFormatter
      *
      * @param array|LogRecord $record
      *
+     * This may be `LogRecord` in Laravel 10 and an array in Laravel 9, LogRecord supports ArrayAccess.
+     * @psalm-suppress PossiblyInvalidArgument
+     *
      * @return string
      */
     public function format($record): string
     {
-        // This may be `LogRecord` in Laravel 10 and an array in Laravel 9, LogRecord supports ArrayAccess.
-        // @psalm-suppress PossiblyInvalidArgument
         $result = parent::format($record);
 
         return "\$json:{$result}\n";
@@ -78,7 +79,7 @@ class VanillaLogFormatter extends JsonFormatter
         $record["_schema"] = "v2";
 
         // Flatten the extra and context
-        if (isset($record["context"])) {
+        if (isset($record["context"]) && is_array($record["context"])) {
             foreach ($record["context"] as $key => $val) {
                 $record[$key] = $val;
             }
@@ -121,6 +122,11 @@ class VanillaLogFormatter extends JsonFormatter
         foreach ($trace as $item) {
             $rawFilePath = $item["file"] ?? "/unknown";
             $file = self::substringLeftTrim($rawFilePath, $this->applicationBasePath);
+
+            if (str_starts_with($file, "/vendor/bin") || str_starts_with($file, "/vendor/phpunit")) {
+                // Ignore phpunit traces.
+                continue;
+            }
 
             // Skip vendor frames.
             if (str_starts_with($file, "/vendor")) {
