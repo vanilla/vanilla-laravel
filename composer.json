@@ -1,0 +1,37 @@
+{
+    "name": "vanillaforums/laravel",
+    "description": "Utilities and Commands for working with Laravel.",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Vanilla\\Laravel\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "VanillaTests\\Laravel\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Adam Charron",
+            "email": "adam@charrondev.com"
+        }
+    ],
+    "require": {
+        "laravel/framework": "^10.0",
+        "php": ">=8.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Vanilla\\Laravel\\Providers\\VanillaServiceProvider"
+            ]
+        }
+    },
+    "require-dev": {
+        "vimeo/psalm": "^5.13",
+        "phpunit/phpunit": "^10.2"
+    }
+}
