@@ -1,4 +1,4 @@
-# vanillaforums/laravel
+# vanilla/laravel
 
 A set of common laravel utilities and configurations used in Vanilla laravel services.
 
@@ -7,7 +7,7 @@ A set of common laravel utilities and configurations used in Vanilla laravel ser
 Require this package with composer using the following command:
 
 ```sh
-composer require vanillaforums/laravel
+composer require vanilla/laravel
 ```
 
 This package makes use of Laravels package auto-discovery mechanism so it should automatically be applied.

@@ -51,7 +51,6 @@ class VanillaServiceProvider extends ServiceProvider
         ///
 
         // Register our cache command
-        Artisan::registerCommand(new ValidateConfigCommand());
         Event::listen(function (CommandFinished $event) {
             if ($event->command === "config:cache") {
                 // Validate the config first.
@@ -61,5 +60,17 @@ class VanillaServiceProvider extends ServiceProvider
                 }
             }
         });
+    }
+
+    /**
+     * Register our commands.
+     *
+     * @return void
+     */
+    protected function registerCommands()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([ValidateConfigCommand::class]);
+        }
     }
 }
