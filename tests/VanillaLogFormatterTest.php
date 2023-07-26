@@ -77,7 +77,7 @@ class VanillaLogFormatterTest extends TestCase
             new \Exception("Parent Exception", 543),
         );
         $this->assertLogLine(
-            '$json:{"message":"hello world","level":200,"level_name":"INFO","channel":"my-logger","datetime":"2022-01-01T00:00:00+00:00","_schema":"v2","error":{"class":"Vanilla\\\\Laravel\\\\Exceptions\\\\ContextException","message":"Bam!","code":500,"file":"/Users/acharron/git/vanilla-laravel/tests/VanillaLogFormatterTest.php:73","previous":{"class":"Exception","message":"Parent Exception","code":543,"file":"/Users/acharron/git/vanilla-laravel/tests/VanillaLogFormatterTest.php:77","stacktrace":""},"contextFoo":"contextBar","stacktrace":""},"stacktrace":"/tests/VanillaLogFormatterTest.php (81)\n/unknown (0)\n/tests/VanillaLogFormatterTest.php (51)\n/tests/VanillaLogFormatterTest.php (79)"}',
+            '$json:{"message":"hello world","level":200,"level_name":"INFO","channel":"my-logger","datetime":"2022-01-01T00:00:00+00:00","_schema":"v2","error":{"class":"Vanilla\\\\Laravel\\\\Exceptions\\\\ContextException","message":"Bam!","code":500,"file":"/tests/VanillaLogFormatterTest.php:73","previous":{"class":"Exception","message":"Parent Exception","code":543,"file":"/tests/VanillaLogFormatterTest.php:77","stacktrace":""},"contextFoo":"contextBar","stacktrace":""},"stacktrace":"/tests/VanillaLogFormatterTest.php (81)\n/unknown (0)\n/tests/VanillaLogFormatterTest.php (51)\n/tests/VanillaLogFormatterTest.php (79)"}',
             fn() => $this->logger->info("hello world", ["error" => $excpection]),
         );
     }

@@ -51,6 +51,9 @@ class VanillaLogFormatter extends JsonFormatter
         }
         unset($result["trace"]);
         $result["stacktrace"] = self::stackTraceString($e->getTrace());
+        if (isset($result["file"])) {
+            $result["file"] = self::substringLeftTrim($result["file"], $this->applicationBasePath);
+        }
 
         return $result;
     }
