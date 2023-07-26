@@ -1,5 +1,5 @@
 {
-    "name": "vanillaforums/laravel",
+    "name": "vanilla/laravel",
     "description": "Utilities and Commands for working with Laravel.",
     "type": "library",
     "license": "MIT",
