@@ -20,17 +20,20 @@ class RequestContextLogMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        Log::withContext([
-            "tags" => ["webRequest"],
-            "request" => [
-                "hostname" => $request->getHost(),
-                "method" => $request->getMethod(),
-                "path" => $request->getPathInfo(),
-                "protocol" => $request->getScheme(),
-                "url" => $request->getUri(),
-                "clientIP" => $request->getClientIp(),
-            ],
-        ]);
+        $existingContext = Log::sharedContext();
+        Log::withContext(
+            array_merge_recursive($existingContext, [
+                "tags" => ["webRequest"],
+                "request" => [
+                    "hostname" => $request->getHost(),
+                    "method" => $request->getMethod(),
+                    "path" => $request->getPathInfo(),
+                    "protocol" => $request->getScheme(),
+                    "url" => $request->getUri(),
+                    "clientIP" => $request->getClientIp(),
+                ],
+            ]),
+        );
 
         return $next($request);
     }
