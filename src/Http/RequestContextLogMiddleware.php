@@ -2,6 +2,7 @@
 
 namespace Vanilla\Laravel\Http;
 
+use Illuminate\Log\LogManager;
 use Illuminate\Support\Facades\Log;
 use Closure;
 use Illuminate\Http\Request;
@@ -20,7 +21,9 @@ class RequestContextLogMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        $existingContext = Log::sharedContext();
+        /** @var LogManager $sharedContext */
+        $logManager = app()->get(LogManager::class);
+        $existingContext = method_exists($logManager, "sharedContext") ? Log::sharedContext() : [];
         Log::withContext(
             array_merge_recursive($existingContext, [
                 "tags" => ["webRequest"],
