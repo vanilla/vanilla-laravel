@@ -33,8 +33,15 @@ class VanillaServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
+        ///
+        /// Register our artisan commands.
+        ///
+        if ($this->app->runningInConsole()) {
+            $this->commands([ValidateConfigCommand::class]);
+        }
+
         ///
         ///  Prepare logging.
         ///
@@ -60,17 +67,5 @@ class VanillaServiceProvider extends ServiceProvider
                 }
             }
         });
-    }
-
-    /**
-     * Register our commands.
-     *
-     * @return void
-     */
-    protected function registerCommands()
-    {
-        if ($this->app->runningInConsole()) {
-            $this->commands([ValidateConfigCommand::class]);
-        }
     }
 }
