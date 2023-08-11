@@ -90,14 +90,54 @@ For these case throw or extend `Vanilla\Laravel\Exceptions\ContextException`. It
 
 Want to add additional context to a caught `ContextException`? Use `ContextException::withContext($newContext)`.
 
-## How to configure
+## Configuration Validation
 
-```sh
-composer require vanillaforums/laravel
+This package registers a new command `artisan config:validate` that will automatically run before `config:cache`. It will look through your configuration files for validation specification under a `ValidateConfigCommand::KEY` key and validate the rest of that configuration file according to those rules.
+
+### Example
+
+**orch.php**
+```php
+
+return [
+    ///
+    /// Config validate here!!!
+    /// 
+    ValidateConfigCommand::KEY => [
+        "type" => ["in:orchestration,local"],
+        "base_url" => ["required", "url"],
+        "search_service_base_url" => ["required", "url"],
+        "hostname" => ["string"],
+        "token" => ["string", "required"],
+        "network" => ["string", "required"],
+        "zone" => ["string", "required"],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Orchestration
+    |--------------------------------------------------------------------------
+    |
+    | These fields are used for accessing orchestration and fetching site info.
+    */
+    "type" => env("ORCH_TYPE", $isOrchestration ? "orchestration" : "local"),
+
+    // Base URL for orchestration.
+    "base_url" => env("ORCH_BASE_URL"),
+
+    // Optional. Primarily used in localhost to force `Host` header with a base_url of an internalIP for the VPN.
+    "hostname" => env("ORCH_HOSTNAME"),
+
+    // Access token used to call orchestration.
+    "token" => env("ORCH_TOKEN"),
+
+    // Which orchestration network to use.
+    "network" => env("ORCH_NETWORK"),
+
+    // Which orchestration zone to use.
+    "zone" => env("ORCH_ZONE"),
+
+    // Base url to use when calling elasticsearch.
+    "search_service_base_url" => env("ORCH_SEARCH_SERVICE_BASE_URL"),
+];
 ```
-
-Now add `\Vanilla\Laravel\Providers\VanillaServiceProvider::class` into your
-
-## Logging
-
-Vanilla has a standard logging schema that gets ingested into our logging stack. It's a JSON serialized log format beginning with `$json:`. The service provider
