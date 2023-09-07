@@ -21,7 +21,8 @@
     ],
     "require": {
         "laravel/framework": "^10.0",
-        "php": ">=8.0"
+        "php": ">=8.0",
+        "vanilla/garden-utils": "^1.1"
     },
     "extra": {
         "laravel": {

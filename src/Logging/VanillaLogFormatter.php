@@ -5,7 +5,6 @@ namespace Vanilla\Laravel\Logging;
 use Monolog\Formatter\JsonFormatter;
 use Monolog\LogRecord;
 use Throwable;
-use Vanilla\Laravel\Exceptions\ContextException;
 
 /**
  * Custom JSON based formats for logs.
@@ -46,7 +45,7 @@ class VanillaLogFormatter extends JsonFormatter
     protected function normalizeException(Throwable $e, int $depth = 0): array
     {
         $result = parent::normalizeException($e, $depth);
-        if ($e instanceof ContextException) {
+        if ($e instanceof \Garden\Utils\ContextException) {
             $result = array_merge($result, $e->getContext());
         }
         unset($result["trace"]);

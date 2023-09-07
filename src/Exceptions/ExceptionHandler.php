@@ -24,7 +24,7 @@ class ExceptionHandler extends BaseExceptionHandler
             "message" => $e->getMessage(),
             "exception" => get_class($e),
         ];
-        if ($e instanceof ContextException) {
+        if ($e instanceof \Garden\Utils\ContextException) {
             $result["context"] = $e->getContext();
         }
         if (config("app.debug")) {
