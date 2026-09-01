@@ -14,12 +14,10 @@ use Vanilla\Laravel\Logging\VanillaLogFormatter;
 /**
  * Service provider wiring up the logging middleware and configuration.
  */
-class VanillaServiceProvider extends ServiceProvider
+final class VanillaServiceProvider extends ServiceProvider
 {
-    /**
-     * Configure DI.
-     */
-    public function register()
+    #[\Override]
+    public function register(): void
     {
         $this->app->singleton(VanillaLogFormatter::class, function () {
             $formatter = new VanillaLogFormatter();
@@ -30,8 +28,6 @@ class VanillaServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
     public function boot(): void
     {
@@ -47,7 +43,6 @@ class VanillaServiceProvider extends ServiceProvider
         ///
 
         // Add logging middleware everywhere.
-        /** @var Router $router */
         $router = $this->app->get(Router::class);
         foreach ($router->getMiddlewareGroups() as $group => $_) {
             $router->pushMiddlewareToGroup($group, RequestContextLogMiddleware::class);

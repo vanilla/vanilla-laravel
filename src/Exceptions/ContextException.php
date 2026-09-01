@@ -9,17 +9,13 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
  */
 class ContextException extends \Garden\Utils\ContextException implements HttpExceptionInterface
 {
-    /**
-     * @inheritDoc
-     */
+    #[\Override]
     public function getStatusCode(): int
     {
         return $this->getHttpStatusCode();
     }
 
-    /**
-     * @inheritDoc
-     */
+    #[\Override]
     public function getHeaders(): array
     {
         return [];

@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Validator;
  *
  * Standard laravel validation configs apply.
  */
-class ValidateConfigCommand extends Command
+final class ValidateConfigCommand extends Command
 {
     const KEY = "__validation__";
 
@@ -38,7 +38,7 @@ class ValidateConfigCommand extends Command
     /**
      * The console command description.
      *
-     * @var string|null
+     * @var string
      */
     protected $description = "Validate the application config.";
 

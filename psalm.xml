@@ -15,6 +15,12 @@
                 <directory name="src" />
             </errorLevel>
         </PropertyNotSetInConstructor>
+        <ClassMustBeFinal>
+            <errorLevel type="suppress">
+                <file name="src/Exceptions/ContextException.php" />
+                <file name="src/Exceptions/ExceptionHandler.php" />
+            </errorLevel>
+        </ClassMustBeFinal>
     </issueHandlers>
     <projectFiles>
         <directory name="src"/>

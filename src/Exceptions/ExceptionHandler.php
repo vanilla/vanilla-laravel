@@ -14,10 +14,7 @@ class ExceptionHandler extends BaseExceptionHandler
         parent::__construct($container);
     }
 
-    /**
-     * Implement better exception serialization.
-     * @inheritDoc
-     */
+    #[\Override]
     protected function convertExceptionToArray(Throwable $e): array
     {
         $result = [
@@ -33,13 +30,7 @@ class ExceptionHandler extends BaseExceptionHandler
         return $result;
     }
 
-    /**
-     * Ensure API requests always return json.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param Throwable $e
-     * @return bool
-     */
+    #[\Override]
     protected function shouldReturnJson($request, Throwable $e): bool
     {
         return parent::shouldReturnJson($request, $e) || str_starts_with($request->path(), "api/");

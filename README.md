@@ -97,12 +97,12 @@ This package registers a new command `artisan config:validate` that will automat
 ### Example
 
 **orch.php**
-```php
 
+```php
 return [
     ///
     /// Config validate here!!!
-    /// 
+    ///
     ValidateConfigCommand::KEY => [
         "type" => ["in:orchestration,local"],
         "base_url" => ["required", "url"],
