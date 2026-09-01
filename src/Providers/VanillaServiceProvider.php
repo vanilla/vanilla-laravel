@@ -48,7 +48,6 @@ final class VanillaServiceProvider extends ServiceProvider
         ///
 
         // Add logging middleware everywhere.
-        /** @var Router $router */
         $router = $this->app->get(Router::class);
         foreach ($router->getMiddlewareGroups() as $group => $_) {
             $router->pushMiddlewareToGroup($group, RequestContextLogMiddleware::class);
