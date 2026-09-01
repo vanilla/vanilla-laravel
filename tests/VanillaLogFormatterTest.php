@@ -38,20 +38,41 @@ class VanillaLogFormatterTest extends TestCase
     }
 
     /**
-     * PUTTING THIS UTILITY EARLY SO IT HAS A STABLE STACKTRACE.
-     *
      * Assert that a certain log line comes out of a callable.
      *
-     * @param string $expectedLogLine
+     * @param array<string, mixed> $expectedPayload
      * @param callable $callable
      * @return void
      */
-    private function assertLogLine(string $expectedLogLine, callable $callable): void
+    private function assertLogLine(array $expectedPayload, callable $callable): void
     {
         call_user_func($callable);
         $logRecords = $this->testLogs->getRecords();
         $lastLog = end($logRecords);
-        $this->assertSame(trim($expectedLogLine), trim($lastLog->formatted));
+        $payload = json_decode(substr(trim($lastLog->formatted), 6), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertArrayHasKey("stacktrace", $payload);
+        unset($payload["stacktrace"]);
+
+        if (isset($payload["error"]["stacktrace"])) {
+            unset($payload["error"]["stacktrace"]);
+        }
+        if (isset($payload["error"]["previous"]["stacktrace"])) {
+            unset($payload["error"]["previous"]["stacktrace"]);
+        }
+        if (isset($payload["error"]["file"])) {
+            $this->assertStringEndsWith("VanillaLogFormatterTest.php", explode(":", $payload["error"]["file"])[0]);
+            unset($payload["error"]["file"]);
+        }
+        if (isset($payload["error"]["previous"]["file"])) {
+            $this->assertStringEndsWith(
+                "VanillaLogFormatterTest.php",
+                explode(":", $payload["error"]["previous"]["file"])[0],
+            );
+            unset($payload["error"]["previous"]["file"]);
+        }
+
+        $this->assertSame($expectedPayload, $payload);
     }
 
     /**
@@ -60,12 +81,27 @@ class VanillaLogFormatterTest extends TestCase
     public function testFormatAsExcepted(): void
     {
         $this->assertLogLine(
-            '$json:{"message":"hello world","level":200,"level_name":"INFO","channel":"my-logger","datetime":"2022-01-01T00:00:00+00:00","_schema":"v2","stacktrace":"/tests/VanillaLogFormatterTest.php (64)\n/unknown (0)\n/tests/VanillaLogFormatterTest.php (51)\n/tests/VanillaLogFormatterTest.php (62)"}',
+            [
+                "message" => "hello world",
+                "level" => 200,
+                "level_name" => "INFO",
+                "channel" => "my-logger",
+                "datetime" => "2022-01-01T00:00:00+00:00",
+                "_schema" => "v2",
+            ],
             fn() => $this->logger->info("hello world"),
         );
 
         $this->assertLogLine(
-            '$json:{"message":"hello world","level":200,"level_name":"INFO","channel":"my-logger","datetime":"2022-01-01T00:00:00+00:00","_schema":"v2","extra-data":{"foo":"bar"},"stacktrace":"/tests/VanillaLogFormatterTest.php (69)\n/unknown (0)\n/tests/VanillaLogFormatterTest.php (51)\n/tests/VanillaLogFormatterTest.php (67)"}',
+            [
+                "message" => "hello world",
+                "level" => 200,
+                "level_name" => "INFO",
+                "channel" => "my-logger",
+                "datetime" => "2022-01-01T00:00:00+00:00",
+                "_schema" => "v2",
+                "extra-data" => ["foo" => "bar"],
+            ],
             fn() => $this->logger->info("hello world", ["extra-data" => ["foo" => "bar"]]),
         );
 
@@ -77,7 +113,25 @@ class VanillaLogFormatterTest extends TestCase
             new \Exception("Parent Exception", 543),
         );
         $this->assertLogLine(
-            '$json:{"message":"hello world","level":200,"level_name":"INFO","channel":"my-logger","datetime":"2022-01-01T00:00:00+00:00","_schema":"v2","error":{"class":"Vanilla\\\\Laravel\\\\Exceptions\\\\ContextException","message":"Bam!","code":500,"file":"/tests/VanillaLogFormatterTest.php:73","previous":{"class":"Exception","message":"Parent Exception","code":543,"file":"/tests/VanillaLogFormatterTest.php:77","stacktrace":""},"contextFoo":"contextBar","stacktrace":""},"stacktrace":"/tests/VanillaLogFormatterTest.php (81)\n/unknown (0)\n/tests/VanillaLogFormatterTest.php (51)\n/tests/VanillaLogFormatterTest.php (79)"}',
+            [
+                "message" => "hello world",
+                "level" => 200,
+                "level_name" => "INFO",
+                "channel" => "my-logger",
+                "datetime" => "2022-01-01T00:00:00+00:00",
+                "_schema" => "v2",
+                "error" => [
+                    "class" => ContextException::class,
+                    "message" => "Bam!",
+                    "code" => 500,
+                    "previous" => [
+                        "class" => "Exception",
+                        "message" => "Parent Exception",
+                        "code" => 543,
+                    ],
+                    "contextFoo" => "contextBar",
+                ],
+            ],
             fn() => $this->logger->info("hello world", ["error" => $excpection]),
         );
     }
