@@ -37,6 +37,11 @@ final class VanillaLogFormatter extends JsonFormatter
         $this->applicationBasePath = $basePath;
     }
 
+    /**
+     * Overridden to add exception context.
+     *
+     * @inheritDoc
+     */
     #[\Override]
     protected function normalizeException(Throwable $e, int $depth = 0): array
     {
@@ -53,6 +58,17 @@ final class VanillaLogFormatter extends JsonFormatter
         return $result;
     }
 
+    /**
+     * Flatten the extra and context into to the top level log message.
+     * Also applies a stack trace to logs.
+     *
+     * @param array|LogRecord $record
+     *
+     * This may be `LogRecord` in Laravel 10 and an array in Laravel 9, LogRecord supports ArrayAccess.
+     * @psalm-suppress PossiblyInvalidArgument
+     *
+     * @return string
+     */
     #[\Override]
     public function format($record): string
     {
