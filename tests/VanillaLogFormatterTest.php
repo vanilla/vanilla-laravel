@@ -19,6 +19,9 @@ class VanillaLogFormatterTest extends TestCase
     /** @var Logger */
     private $logger;
 
+    /** @var VanillaLogFormatter */
+    private $logFormatter;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -35,44 +38,35 @@ class VanillaLogFormatterTest extends TestCase
 
         $this->logger = $logger;
         $this->testLogs = $testLogs;
+        $this->logFormatter = $logFormatter;
     }
 
     /**
-     * Assert that a certain log line comes out of a callable.
-     *
-     * @param array<string, mixed> $expectedPayload
-     * @param callable $callable
-     * @return void
+     * Test stack trace abbreviation and formatting rules directly.
      */
-    private function assertLogLine(array $expectedPayload, callable $callable): void
+    public function testStackTraceArray(): void
     {
-        call_user_func($callable);
-        $logRecords = $this->testLogs->getRecords();
-        $lastLog = end($logRecords);
-        $payload = json_decode(substr(trim($lastLog->formatted), 6), true, 512, JSON_THROW_ON_ERROR);
+        $trace = [
+            ["file" => $this->basePath() . "/src/Foo.php", "line" => 10],
+            ["file" => $this->basePath() . "/vendor/monolog/monolog/src/Monolog/Logger.php", "line" => 200],
+            [
+                "file" => $this->basePath() . "/vendor/monolog/monolog/src/Monolog/Handler/AbstractHandler.php",
+                "line" => 50,
+            ],
+            ["line" => 0],
+            ["file" => $this->basePath() . "/vendor/phpunit/phpunit/src/Framework/TestCase.php", "line" => 100],
+            ["file" => $this->basePath() . "/vendor/bin/phpunit", "line" => 122],
+        ];
 
-        $this->assertArrayHasKey("stacktrace", $payload);
-        unset($payload["stacktrace"]);
-
-        if (isset($payload["error"]["stacktrace"])) {
-            unset($payload["error"]["stacktrace"]);
-        }
-        if (isset($payload["error"]["previous"]["stacktrace"])) {
-            unset($payload["error"]["previous"]["stacktrace"]);
-        }
-        if (isset($payload["error"]["file"])) {
-            $this->assertStringEndsWith("VanillaLogFormatterTest.php", explode(":", $payload["error"]["file"])[0]);
-            unset($payload["error"]["file"]);
-        }
-        if (isset($payload["error"]["previous"]["file"])) {
-            $this->assertStringEndsWith(
-                "VanillaLogFormatterTest.php",
-                explode(":", $payload["error"]["previous"]["file"])[0],
-            );
-            unset($payload["error"]["previous"]["file"]);
-        }
-
-        $this->assertSame($expectedPayload, $payload);
+        $this->assertSame(
+            ["/src/Foo.php (10)", "/vendor/monolog/**/* (2 frames)", "/unknown (0)"],
+            $this->logFormatter->stackTraceArray($trace),
+        );
+        $this->assertSame(
+            "/src/Foo.php (10)\n/vendor/monolog/**/* (2 frames)\n/unknown (0)",
+            $this->logFormatter->stackTraceString($trace),
+        );
+        $this->assertSame(["/unknown (0)"], $this->logFormatter->stackTraceArray([["line" => 0]]));
     }
 
     /**
@@ -105,8 +99,7 @@ class VanillaLogFormatterTest extends TestCase
             fn() => $this->logger->info("hello world", ["extra-data" => ["foo" => "bar"]]),
         );
 
-        // Now test exception serialization
-        $excpection = new ContextException(
+        $exception = new ContextException(
             "Bam!",
             500,
             ["contextFoo" => "contextBar"],
@@ -132,7 +125,92 @@ class VanillaLogFormatterTest extends TestCase
                     "contextFoo" => "contextBar",
                 ],
             ],
-            fn() => $this->logger->info("hello world", ["error" => $excpection]),
+            fn() => $this->logger->info("hello world", ["error" => $exception]),
+            [
+                "error" => "",
+                "previous" => "",
+            ],
         );
+    }
+
+    private function expectedLogStackTraceLinePattern(): string
+    {
+        return "#^(/tests/VanillaLogFormatterTest\\.php \\(\\d+\\)|/unknown \\(0\\))$#";
+    }
+
+    /**
+     * Assert formatted log payload and stack trace content.
+     *
+     * @param array<string, mixed> $expectedPayload
+     * @param array<string, string> $expectedNestedStackTraces
+     */
+    private function assertLogLine(
+        array $expectedPayload,
+        callable $callable,
+        array $expectedNestedStackTraces = [],
+    ): void {
+        call_user_func($callable);
+        $logRecords = $this->testLogs->getRecords();
+        $lastLog = end($logRecords);
+        $payload = json_decode(substr(trim($lastLog->formatted), 6), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertArrayHasKey("stacktrace", $payload);
+        $this->assertFormattedLogStackTrace($payload["stacktrace"]);
+        unset($payload["stacktrace"]);
+
+        if (isset($payload["error"]["stacktrace"])) {
+            $this->assertSame(
+                $expectedNestedStackTraces["error"] ?? null,
+                $payload["error"]["stacktrace"],
+                "Unexpected nested error stacktrace.",
+            );
+            unset($payload["error"]["stacktrace"]);
+        }
+        if (isset($payload["error"]["previous"]["stacktrace"])) {
+            $this->assertSame(
+                $expectedNestedStackTraces["previous"] ?? null,
+                $payload["error"]["previous"]["stacktrace"],
+                "Unexpected nested previous stacktrace.",
+            );
+            unset($payload["error"]["previous"]["stacktrace"]);
+        }
+        if (isset($payload["error"]["file"])) {
+            $this->assertStringEndsWith("VanillaLogFormatterTest.php", explode(":", $payload["error"]["file"])[0]);
+            unset($payload["error"]["file"]);
+        }
+        if (isset($payload["error"]["previous"]["file"])) {
+            $this->assertStringEndsWith(
+                "VanillaLogFormatterTest.php",
+                explode(":", $payload["error"]["previous"]["file"])[0],
+            );
+            unset($payload["error"]["previous"]["file"]);
+        }
+
+        $this->assertSame($expectedPayload, $payload);
+    }
+
+    private function assertFormattedLogStackTrace(string $stacktrace): void
+    {
+        $lines = $stacktrace === "" ? [] : explode("\n", $stacktrace);
+        $this->assertNotEmpty($lines, "Expected a formatted log stack trace.");
+
+        $pattern = $this->expectedLogStackTraceLinePattern();
+        foreach ($lines as $index => $line) {
+            $this->assertMatchesRegularExpression($pattern, $line, "Unexpected stack trace line at index {$index}.");
+        }
+
+        $this->assertContains("/unknown (0)", $lines);
+        $this->assertTrue(
+            (bool) array_filter(
+                $lines,
+                static fn(string $line): bool => str_starts_with($line, "/tests/VanillaLogFormatterTest.php"),
+            ),
+            "Expected at least one test file frame in the log stack trace.",
+        );
+    }
+
+    private function basePath(): string
+    {
+        return realpath(__DIR__ . "/../");
     }
 }
