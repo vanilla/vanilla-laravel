@@ -9,7 +9,7 @@ use Throwable;
 /**
  * Custom JSON based formats for logs.
  */
-class VanillaLogFormatter extends JsonFormatter
+final class VanillaLogFormatter extends JsonFormatter
 {
     private string $applicationBasePath = "";
     public \DateTimeInterface|null $mockedTime = null;
@@ -42,6 +42,7 @@ class VanillaLogFormatter extends JsonFormatter
      *
      * @inheritDoc
      */
+    #[\Override]
     protected function normalizeException(Throwable $e, int $depth = 0): array
     {
         $result = parent::normalizeException($e, $depth);
@@ -50,7 +51,7 @@ class VanillaLogFormatter extends JsonFormatter
         }
         unset($result["trace"]);
         $result["stacktrace"] = self::stackTraceString($e->getTrace());
-        if (isset($result["file"])) {
+        if (isset($result["file"]) && is_string($result["file"])) {
             $result["file"] = self::substringLeftTrim($result["file"], $this->applicationBasePath);
         }
 
@@ -68,6 +69,7 @@ class VanillaLogFormatter extends JsonFormatter
      *
      * @return string
      */
+    #[\Override]
     public function format($record): string
     {
         $result = parent::format($record);
@@ -75,6 +77,7 @@ class VanillaLogFormatter extends JsonFormatter
         return "\$json:{$result}\n";
     }
 
+    #[\Override]
     protected function normalizeRecord(LogRecord $record): array
     {
         $record = parent::normalizeRecord($record);

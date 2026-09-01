@@ -16,8 +16,10 @@ class ExceptionHandler extends BaseExceptionHandler
 
     /**
      * Implement better exception serialization.
+     *
      * @inheritDoc
      */
+    #[\Override]
     protected function convertExceptionToArray(Throwable $e): array
     {
         $result = [
@@ -40,6 +42,7 @@ class ExceptionHandler extends BaseExceptionHandler
      * @param Throwable $e
      * @return bool
      */
+    #[\Override]
     protected function shouldReturnJson($request, Throwable $e): bool
     {
         return parent::shouldReturnJson($request, $e) || str_starts_with($request->path(), "api/");

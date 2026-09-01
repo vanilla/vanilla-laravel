@@ -12,6 +12,7 @@ class ContextException extends \Garden\Utils\ContextException implements HttpExc
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function getStatusCode(): int
     {
         return $this->getHttpStatusCode();
@@ -20,6 +21,7 @@ class ContextException extends \Garden\Utils\ContextException implements HttpExc
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function getHeaders(): array
     {
         return [];
