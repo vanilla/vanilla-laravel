@@ -20,7 +20,11 @@ final class RequestContextLogMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        $existingContext = Log::sharedContext();
+        // Check the facade root (not LogManager from the container) so this stays
+        // compatible with testing fakes like TiMacDonald\Log\LogFake that implement
+        // withContext()/shareContext() but not sharedContext().
+        $logger = Log::getFacadeRoot();
+        $existingContext = method_exists($logger, "sharedContext") ? $logger->sharedContext() : [];
         Log::withContext(
             array_merge_recursive($existingContext, [
                 "tags" => ["webRequest"],
